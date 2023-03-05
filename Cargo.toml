@@ -5,7 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "tmp"
+name = "sobol_sensitivity"
 crate-type = ["cdylib"]
 
 [dependencies]
@@ -14,3 +14,4 @@ ndarray = {version = "0.15.0", features = ["rayon"]}
 numpy = "0.17.2"
 dict_derive = "0.4.0"
 statrs = "0.16.0"
+rand = "0.8.4"

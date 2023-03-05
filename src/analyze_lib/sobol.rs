@@ -1,4 +1,7 @@
 use std::ops::{Sub, Mul};
+use rand::prelude::*;
+use rand::distributions::Uniform;
+use statrs::distribution::{Normal, ContinuousCDF};
 
 use crate::parameters;
 
@@ -72,10 +75,13 @@ fn calc_total(slices: &ArraySlices, y: &Array1<f64>, res: &mut SARes) -> () {
 //     res.set_s2(0.5 * (inner.mean_axis(Axis(0)).unwrap() / y.std(0.0))); 
 // }
 
+
+
+
 // The Sobol Sensitivity Analysis Method
 // Input is a Sequence of Model Outputs and the Dimensions of the Problem
 // Output is a object containing the first order, total order, and second order sensitivity indices
-pub fn sobol_anaylze(y: &ArrayView1<f64>, args: &CommonArgs) -> SARes {
+pub fn analyze(y: &ArrayView1<f64>, args: &CommonArgs) -> SARes {
     // Have to convert d into usize.
     let d: usize = args.d.try_into().unwrap();
     // Create the output holder.
@@ -114,9 +120,23 @@ pub fn sobol_anaylze(y: &ArrayView1<f64>, args: &CommonArgs) -> SARes {
         // calc_s2(&y_slices, &y_norm, &mut res);
     }
     
-    // bootstrap the Confidence Intervals
-    
+    // bootstrap the Confidence Intervals (parallelized with rayon)
+    // create a random sample of integers with dimension num_bootstraps * num_samples
+    // rand::SeedableRng::seed_from_u64();
+    let rng = SeedableRng::seed_from_u64(0);
+    let mut bootstrap_samples = Array2::zeros((args.num_resamples, n));
 
+    // create a normal distribution
+    let normal = Normal::new(0.0, 1.0).unwrap();
+    // create a cdf for the normal distribution
+    let cdf = normal.cdf(0.0);
+
+    let pff = match args.confidence_interval {
+        0.95 => 1.959963984540054,
+        0.99 => 2.5758293035489004,
+        // if we can't find the confidence interval, compute it (expensive)
+        _ => Normal::new(0.0, 1.0, ).unwrap().inverse_cdf(args.confidence_interval),
+    };
 
     // return res
     res
